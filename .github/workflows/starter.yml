@@ -1,0 +1,46 @@
+name: ci-fullstack-workflow
+
+on:
+  # Schedule the workflow to run at 0:00 (midnight) every Sunday
+  schedule:
+    - cron: '0 0 * * 0'
+  # Run the workflow when there is a push to the main branch
+  push:
+    branches:
+      - main
+
+#Use a matrix strategy to use Node.js versions 16.x and 18.x
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16, 18]
+      fail-fast: true
+
+    steps:
+      # Check out the code from the repository.
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up a Node.js environment using the specified node version.
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # Install the dependencies.
+      - run: cd backend && npm install
+
+      # Run the tests.
+      - run: cd backend && npm test
+
+      # Run the linter.
+      - run: cd backend && npm run lint
+
+      # Send a console message at completion.
+      - run: |
+          echo "Hello ${{github.actor}}. You pushed to ${{github.repository}} at $(date)."
+
+        
